@@ -1,0 +1,26 @@
+# Binaries
+/cronflux
+/bin/
+/dist/
+*.exe
+*.test
+*.out
+
+# Go
+/vendor/
+coverage.out
+coverage.html
+profile.cov
+
+# Local env / editor
+.env
+.env.local
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Runtime data
+*.db
+*.sqlite
+/tmp/
