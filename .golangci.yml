@@ -1,0 +1,39 @@
+version: "2"
+
+run:
+  timeout: 5m
+  tests: true
+
+linters:
+  default: standard
+  enable:
+    - revive
+    - misspell
+    - unconvert
+    - bodyclose
+    - errorlint
+  settings:
+    revive:
+      rules:
+        - name: package-comments
+        - name: exported
+          disabled: true
+    misspell:
+      locale: US
+  exclusions:
+    generated: lax
+    rules:
+      # Tests are allowed to be a little looser about unchecked errors.
+      - path: _test\.go
+        linters:
+          - errcheck
+          - bodyclose
+      # The embedded migration runner intentionally ignores rows.Close error.
+      - path: internal/store/postgres/
+        text: "Error return value of .*Close.* is not checked"
+        linters:
+          - errcheck
+
+formatters:
+  enable:
+    - gofmt
