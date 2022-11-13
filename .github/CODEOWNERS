@@ -1,0 +1,5 @@
+# Default owner for everything in the repo.
+*       @Fzgt
+
+# Storage backends benefit from an extra pair of eyes.
+/internal/store/   @Fzgt
