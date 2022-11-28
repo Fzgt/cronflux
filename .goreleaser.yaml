@@ -1,0 +1,49 @@
+version: 2
+
+project_name: cronflux
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: cronflux
+    main: ./cmd/cronflux
+    binary: cronflux
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X github.com/Fzgt/cronflux/internal/buildinfo.Version={{.Version}}
+      - -X github.com/Fzgt/cronflux/internal/buildinfo.Commit={{.ShortCommit}}
+      - -X github.com/Fzgt/cronflux/internal/buildinfo.Date={{.Date}}
+
+archives:
+  - formats: [tar.gz]
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+
+release:
+  draft: false
+  prerelease: auto
