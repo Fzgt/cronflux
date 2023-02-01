@@ -7,8 +7,8 @@ import (
 )
 
 // Parse parses a cron specification and returns a Schedule evaluated in UTC.
-// It accepts the standard five-field form (minute hour dom month dow) and the
-// six-field form with a leading seconds field.
+// It accepts the standard five-field form (minute hour dom month dow), the
+// six-field form with a leading seconds field, and the @-descriptors.
 func Parse(spec string) (Schedule, error) {
 	return ParseInLocation(spec, time.UTC)
 }
@@ -19,7 +19,29 @@ func ParseInLocation(spec string, loc *time.Location) (Schedule, error) {
 	if spec == "" {
 		return nil, fmt.Errorf("cron: empty spec")
 	}
+	if strings.HasPrefix(spec, "@") {
+		return parseDescriptor(spec, loc)
+	}
 	return parseFields(strings.Fields(spec), loc)
+}
+
+// descriptors maps the common @-shortcuts to their equivalent six-field spec.
+var descriptors = map[string]string{
+	"@yearly":   "0 0 0 1 1 *",
+	"@annually": "0 0 0 1 1 *",
+	"@monthly":  "0 0 0 1 * *",
+	"@weekly":   "0 0 0 * * 0",
+	"@daily":    "0 0 0 * * *",
+	"@midnight": "0 0 0 * * *",
+	"@hourly":   "0 0 * * * *",
+}
+
+// parseDescriptor resolves an @-prefixed schedule.
+func parseDescriptor(spec string, loc *time.Location) (Schedule, error) {
+	if expanded, ok := descriptors[spec]; ok {
+		return parseFields(strings.Fields(expanded), loc)
+	}
+	return nil, fmt.Errorf("cron: unrecognised descriptor %q", spec)
 }
 
 // parseFields builds a SpecSchedule from an already-split field list.
