@@ -38,6 +38,9 @@ var descriptors = map[string]string{
 
 // parseDescriptor resolves an @-prefixed schedule.
 func parseDescriptor(spec string, loc *time.Location) (Schedule, error) {
+	if strings.HasPrefix(spec, "@every ") {
+		return parseEvery(spec)
+	}
 	if expanded, ok := descriptors[spec]; ok {
 		return parseFields(strings.Fields(expanded), loc)
 	}
