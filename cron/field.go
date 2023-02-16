@@ -11,15 +11,23 @@ import (
 // field is the unrestricted "*" (or the day "?"), which the scheduler needs to
 // distinguish for the day-of-month / day-of-week rules.
 //
-// A field is one term of the form:
+// A field is a comma-separated list of terms, each of the form:
 //
 //	*            every value
-//	N            a single value
+//	N            a single value (numeric or a name such as JAN or MON)
 //	A-B          an inclusive range
 //	*/S or A/S   every S-th value from the start of the range (or from A) to max
 //	A-B/S        every S-th value within the range
 func parseField(field string, b bounds) (uint64, error) {
-	return parseTerm(field, b)
+	var mask uint64
+	for _, term := range strings.Split(field, ",") {
+		m, err := parseTerm(term, b)
+		if err != nil {
+			return 0, err
+		}
+		mask |= m
+	}
+	return mask, nil
 }
 
 // parseTerm parses one comma-free term of a field.
@@ -46,23 +54,21 @@ func parseTerm(term string, b bounds) (uint64, error) {
 		lo, hi, star = b.min, b.max, true
 	case strings.ContainsRune(rangePart, '-'):
 		parts := strings.SplitN(rangePart, "-", 2)
-		l, err := strconv.ParseUint(parts[0], 10, 64)
+		l, err := parseValue(parts[0], b)
 		if err != nil {
 			return 0, fmt.Errorf("cron: invalid range start in %q: %w", term, err)
 		}
-		h, err := strconv.ParseUint(parts[1], 10, 64)
+		h, err := parseValue(parts[1], b)
 		if err != nil {
 			return 0, fmt.Errorf("cron: invalid range end in %q: %w", term, err)
 		}
-		lo, hi = uint(l), uint(h)
+		lo, hi = l, h
 	default:
-		n, err := strconv.ParseUint(rangePart, 10, 64)
+		n, err := parseValue(rangePart, b)
 		if err != nil {
-			return 0, fmt.Errorf("cron: invalid field %q: %w", term, err)
+			return 0, err
 		}
-		lo = uint(n)
-		// "N/S" means "from N to the maximum, every S", whereas a bare "N"
-		// selects a single value.
+		lo = n
 		if hasStep {
 			hi = b.max
 		} else {
@@ -78,4 +84,19 @@ func parseTerm(term string, b bounds) (uint64, error) {
 		mask |= starBit
 	}
 	return mask, nil
+}
+
+// parseValue resolves a single token to a number, accepting the symbolic names
+// declared by the field's bounds (JAN-DEC, SUN-SAT) case-insensitively.
+func parseValue(s string, b bounds) (uint, error) {
+	if b.names != nil {
+		if v, ok := b.names[strings.ToLower(s)]; ok {
+			return v, nil
+		}
+	}
+	n, err := strconv.ParseUint(s, 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("cron: invalid value %q: %w", s, err)
+	}
+	return uint(n), nil
 }
