@@ -4,13 +4,22 @@
 // explicitly. Delays are deterministic unless a non-zero Jitter is set.
 package backoff
 
-import "time"
+import (
+	"math"
+	"time"
+)
 
 // Strategy returns the delay to wait before a given (zero-based) retry
 // attempt. Attempt 0 is the delay before the first retry.
 type Strategy interface {
 	Delay(attempt int) time.Duration
 }
+
+// Default values applied when a field is left at its zero value.
+const (
+	defaultBase   = 100 * time.Millisecond
+	defaultFactor = 2.0
+)
 
 // Exponential is a capped exponential backoff with optional jitter.
 type Exponential struct {
@@ -24,4 +33,30 @@ type Exponential struct {
 	// Jitter is the fraction of the computed delay that is randomised, in
 	// the range [0, 1]. Zero means fully deterministic.
 	Jitter float64
+}
+
+// Delay returns the backoff duration for the given zero-based attempt. The
+// growth is base * factor^attempt, capped at Max and clamped so it can never
+// overflow time.Duration.
+func (e Exponential) Delay(attempt int) time.Duration {
+	if attempt < 0 {
+		attempt = 0
+	}
+	base := e.Base
+	if base <= 0 {
+		base = defaultBase
+	}
+	factor := e.Factor
+	if factor <= 1 {
+		factor = defaultFactor
+	}
+
+	d := float64(base) * math.Pow(factor, float64(attempt))
+	if e.Max > 0 && d > float64(e.Max) {
+		d = float64(e.Max)
+	}
+	if d > float64(math.MaxInt64) {
+		d = float64(math.MaxInt64)
+	}
+	return time.Duration(d)
 }
