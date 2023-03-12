@@ -6,6 +6,7 @@ package backoff
 
 import (
 	"math"
+	"math/rand/v2"
 	"time"
 )
 
@@ -54,6 +55,14 @@ func (e Exponential) Delay(attempt int) time.Duration {
 	d := float64(base) * math.Pow(factor, float64(attempt))
 	if e.Max > 0 && d > float64(e.Max) {
 		d = float64(e.Max)
+	}
+	if j := e.Jitter; j > 0 {
+		if j > 1 {
+			j = 1
+		}
+		// Randomise within [d*(1-j), d] so jitter only ever shortens the
+		// delay and can never exceed the cap computed above.
+		d = d*(1-j) + rand.Float64()*d*j
 	}
 	if d > float64(math.MaxInt64) {
 		d = float64(math.MaxInt64)
