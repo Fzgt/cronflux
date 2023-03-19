@@ -11,13 +11,9 @@ import (
 // field is the unrestricted "*" (or the day "?"), which the scheduler needs to
 // distinguish for the day-of-month / day-of-week rules.
 //
-// A field is a comma-separated list of terms, each of the form:
-//
-//	*            every value
-//	N            a single value (numeric or a name such as JAN or MON)
-//	A-B          an inclusive range
-//	*/S or A/S   every S-th value from the start of the range (or from A) to max
-//	A-B/S        every S-th value within the range
+// A field is a comma-separated list of terms. A term may be a wildcard ("*"),
+// a single value ("5" or a name such as JAN or MON), an inclusive range
+// ("1-5"), or any of those followed by a step ("*/15", "1-30/5", "5/10").
 func parseField(field string, b bounds) (uint64, error) {
 	var mask uint64
 	for _, term := range strings.Split(field, ",") {
