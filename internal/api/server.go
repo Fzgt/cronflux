@@ -3,7 +3,9 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"net/http"
 	"time"
@@ -63,6 +65,35 @@ func (s *Server) routes(mux *http.ServeMux) {
 func (s *Server) Start() error {
 	s.log.Info("http server listening", "addr", s.http.Addr)
 	return s.http.ListenAndServe()
+}
+
+// Shutdown gracefully drains in-flight requests, giving them until ctx's
+// deadline before forcing connections closed.
+func (s *Server) Shutdown(ctx context.Context) error {
+	s.log.Info("http server shutting down")
+	return s.http.Shutdown(ctx)
+}
+
+// ListenAndServe runs the server until ctx is cancelled, then drains it with
+// the given grace period. It returns nil on a clean shutdown.
+func (s *Server) ListenAndServe(ctx context.Context, grace time.Duration) error {
+	errCh := make(chan error, 1)
+	go func() {
+		if err := s.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			errCh <- err
+			return
+		}
+		errCh <- nil
+	}()
+
+	select {
+	case err := <-errCh:
+		return err
+	case <-ctx.Done():
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), grace)
+		defer cancel()
+		return s.Shutdown(shutdownCtx)
+	}
 }
 
 // handleRoot reports basic service information.
