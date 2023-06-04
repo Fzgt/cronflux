@@ -59,6 +59,7 @@ func NewServer(cfg Config) *Server {
 // routes registers every handler on the mux. It grows as features are added.
 func (s *Server) routes(mux *http.ServeMux) {
 	s.registerJobRoutes(mux)
+	s.registerRunRoutes(mux)
 	mux.HandleFunc("GET /", s.handleRoot)
 }
 
