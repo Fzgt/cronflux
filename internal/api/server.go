@@ -60,6 +60,7 @@ func NewServer(cfg Config) *Server {
 func (s *Server) routes(mux *http.ServeMux) {
 	s.registerJobRoutes(mux)
 	s.registerRunRoutes(mux)
+	s.registerHealthRoutes(mux)
 	mux.HandleFunc("GET /", s.handleRoot)
 }
 
