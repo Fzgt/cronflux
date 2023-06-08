@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/Fzgt/cronflux/internal/scheduler"
 	"github.com/Fzgt/cronflux/internal/store"
@@ -61,6 +62,9 @@ func (s *Server) routes(mux *http.ServeMux) {
 	s.registerJobRoutes(mux)
 	s.registerRunRoutes(mux)
 	s.registerHealthRoutes(mux)
+	if s.gatherer != nil {
+		mux.Handle("GET /metrics", promhttp.HandlerFor(s.gatherer, promhttp.HandlerOpts{}))
+	}
 	mux.HandleFunc("GET /", s.handleRoot)
 }
 
