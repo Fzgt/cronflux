@@ -62,10 +62,17 @@ func (s *Server) routes(mux *http.ServeMux) {
 	s.registerJobRoutes(mux)
 	s.registerRunRoutes(mux)
 	s.registerHealthRoutes(mux)
+	mux.HandleFunc("GET /api", s.serviceInfo)
 	if s.gatherer != nil {
 		mux.Handle("GET /metrics", promhttp.HandlerFor(s.gatherer, promhttp.HandlerOpts{}))
 	}
+	s.registerDashboard(mux)
 	mux.HandleFunc("GET /", s.handleRoot)
+}
+
+// handleRoot answers unmatched paths with a 404.
+func (s *Server) handleRoot(w http.ResponseWriter, _ *http.Request) {
+	writeError(w, http.StatusNotFound, "not found")
 }
 
 // Start begins serving and blocks until the server is shut down.
@@ -104,7 +111,7 @@ func (s *Server) ListenAndServe(ctx context.Context, grace time.Duration) error 
 }
 
 // handleRoot reports basic service information.
-func (s *Server) handleRoot(w http.ResponseWriter, _ *http.Request) {
+func (s *Server) serviceInfo(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{
 		"service": "cronflux",
 		"api":     "/api",

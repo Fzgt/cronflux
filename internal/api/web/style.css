@@ -1,0 +1,116 @@
+:root {
+  --bg: #0f1116;
+  --panel: #171a21;
+  --border: #262b36;
+  --text: #d6dae2;
+  --muted: #8a92a2;
+  --accent: #5aa7ff;
+  --ok: #46c07a;
+  --warn: #e0a23c;
+  --bad: #e5544b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  letter-spacing: 0.02em;
+}
+
+main {
+  padding: 1.5rem;
+  display: grid;
+  gap: 1.5rem;
+}
+
+section {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+}
+
+h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.pill {
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  border: 1px solid var(--border);
+}
+
+.pill--idle {
+  color: var(--muted);
+}
+.pill--ok {
+  color: var(--ok);
+  border-color: var(--ok);
+}
+.pill--bad {
+  color: var(--bad);
+  border-color: var(--bad);
+}
+
+.state-succeeded {
+  color: var(--ok);
+}
+.state-failed,
+.state-dead {
+  color: var(--bad);
+}
+.state-running,
+.state-pending {
+  color: var(--warn);
+}
+
+footer {
+  padding: 1rem 1.5rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+footer a {
+  color: var(--accent);
+}

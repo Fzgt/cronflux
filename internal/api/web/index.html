@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>cronflux</title>
+    <link rel="stylesheet" href="/ui/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>cronflux</h1>
+      <span id="status" class="pill pill--idle">connecting…</span>
+    </header>
+
+    <main>
+      <section>
+        <h2>Jobs</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Schedule</th>
+              <th>Depends on</th>
+              <th>Enabled</th>
+            </tr>
+          </thead>
+          <tbody id="jobs"></tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Recent runs</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Run</th>
+              <th>Job</th>
+              <th>State</th>
+              <th>Attempt</th>
+              <th>Scheduled for</th>
+            </tr>
+          </thead>
+          <tbody id="runs"></tbody>
+        </table>
+      </section>
+    </main>
+
+    <footer>Auto-refreshing every 5s · <a href="/metrics">metrics</a></footer>
+    <script src="/ui/app.js"></script>
+  </body>
+</html>
