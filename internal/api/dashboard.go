@@ -19,10 +19,15 @@ func (s *Server) registerDashboard(mux *http.ServeMux) {
 		s.log.Error("dashboard assets unavailable", "err", err)
 		return
 	}
-	fileServer := http.FileServer(http.FS(sub))
-	mux.Handle("GET /ui/", http.StripPrefix("/ui/", fileServer))
-	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
-		r.URL.Path = "/index.html"
-		fileServer.ServeHTTP(w, r)
+	mux.Handle("GET /ui/", http.StripPrefix("/ui/", http.FileServer(http.FS(sub))))
+
+	index, err := fs.ReadFile(sub, "index.html")
+	if err != nil {
+		s.log.Error("dashboard index unavailable", "err", err)
+		return
+	}
+	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_, _ = w.Write(index)
 	})
 }
