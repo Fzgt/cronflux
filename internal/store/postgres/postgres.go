@@ -249,7 +249,10 @@ func (s *Store) ListRuns(ctx context.Context, f store.RunFilter) ([]job.Run, err
 	return out, rows.Err()
 }
 
-// ClaimDue leases up to limit ready runs and marks them running.
+// ClaimDue leases up to limit ready runs and marks them running. It uses
+// FOR UPDATE SKIP LOCKED so that many workers can claim disjoint sets of runs
+// concurrently without blocking one another, which is what makes the
+// PostgreSQL backend safe to run on multiple nodes.
 func (s *Store) ClaimDue(ctx context.Context, now time.Time, worker string, lease time.Duration, limit int) ([]job.Run, error) {
 	rows, err := s.db.QueryContext(ctx, `
 WITH ready AS (
@@ -258,6 +261,7 @@ WITH ready AS (
        OR (state = 'running' AND lease_expiry < $1)
     ORDER BY scheduled_for
     LIMIT $4
+    FOR UPDATE SKIP LOCKED
 )
 UPDATE runs r
 SET state = 'running', worker = $2, lease_expiry = $3, updated_at = $1,
