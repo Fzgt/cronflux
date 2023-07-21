@@ -72,3 +72,25 @@ func TestSpecNextImpossibleReturnsZero(t *testing.T) {
 		t.Errorf("expected zero time for impossible spec, got %s", got)
 	}
 }
+
+func TestSpecNextCalendarEdges(t *testing.T) {
+	tests := []struct {
+		name                            string
+		sec, min, hour, dom, month, dow string
+		from, want                      string
+	}{
+		{"leap day", "0", "0", "0", "29", "2", "*", "2026-03-01T00:00:00Z", "2028-02-29T00:00:00Z"},
+		{"first of month", "0", "0", "0", "1", "*", "*", "2026-01-15T00:00:00Z", "2026-02-01T00:00:00Z"},
+		{"31st skips short months", "0", "0", "0", "31", "*", "*", "2026-04-01T00:00:00Z", "2026-05-31T00:00:00Z"},
+		{"new year rollover", "0", "0", "0", "1", "1", "*", "2026-12-31T12:00:00Z", "2027-01-01T00:00:00Z"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := buildSpec(t, tt.sec, tt.min, tt.hour, tt.dom, tt.month, tt.dow)
+			got := s.Next(mustTime(t, tt.from))
+			if want := mustTime(t, tt.want); !got.Equal(want) {
+				t.Errorf("Next(%s) = %s, want %s", tt.from, got.Format(time.RFC3339), tt.want)
+			}
+		})
+	}
+}
