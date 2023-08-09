@@ -55,6 +55,13 @@ func Open(ctx context.Context, dsn string) (*Store, error) {
 // Close closes the underlying connection pool.
 func (s *Store) Close() error { return s.db.Close() }
 
+// Reset removes all jobs and runs. It exists to give integration tests a clean
+// slate and is not used by the running server.
+func (s *Store) Reset(ctx context.Context) error {
+	_, err := s.db.ExecContext(ctx, `TRUNCATE jobs, runs`)
+	return err
+}
+
 // PutJob inserts or replaces a job.
 func (s *Store) PutJob(ctx context.Context, j job.Job) error {
 	command, _ := json.Marshal(nonNil(j.Command))
