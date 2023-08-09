@@ -64,8 +64,10 @@ func (e Exponential) Delay(attempt int) time.Duration {
 		// delay and can never exceed the cap computed above.
 		d = d*(1-j) + rand.Float64()*d*j
 	}
-	if d > float64(math.MaxInt64) {
-		d = float64(math.MaxInt64)
+	// Saturate rather than converting a float that would overflow int64, which
+	// would wrap around to a negative duration.
+	if d >= float64(math.MaxInt64) {
+		return time.Duration(math.MaxInt64)
 	}
 	return time.Duration(d)
 }
