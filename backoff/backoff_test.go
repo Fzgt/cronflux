@@ -54,3 +54,17 @@ func TestJitterStaysWithinBounds(t *testing.T) {
 		}
 	}
 }
+
+func TestDelayDoesNotOverflow(t *testing.T) {
+	// A very large attempt must saturate to a positive duration rather than
+	// wrapping around to a negative value.
+	e := backoff.Exponential{Base: time.Hour, Factor: 10}
+	if d := e.Delay(1000); d <= 0 {
+		t.Fatalf("uncapped delay overflowed to %s", d)
+	}
+	// With a cap the delay never exceeds it, no matter how large the attempt.
+	capped := backoff.Exponential{Base: time.Second, Factor: 2, Max: time.Minute}
+	if got := capped.Delay(1000); got != time.Minute {
+		t.Fatalf("capped delay = %s, want 1m", got)
+	}
+}
