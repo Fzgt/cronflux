@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Fzgt/cronflux/internal/clock"
 	"github.com/Fzgt/cronflux/internal/job"
 	"github.com/Fzgt/cronflux/internal/metrics"
 	"github.com/Fzgt/cronflux/internal/store"
@@ -24,7 +25,11 @@ type Options struct {
 	Lease        time.Duration
 	Logger       *slog.Logger
 	NewID        func() string
-	Now          func() time.Time
+	// Clock overrides the time source. If nil, Now is used, and if that is
+	// also nil the system clock is used.
+	Clock clock.Clock
+	// Now is a convenience shortcut for a clock built from a function.
+	Now func() time.Time
 }
 
 // Scheduler materialises runs, dispatches them to workers and advances DAG
@@ -40,7 +45,7 @@ type Scheduler struct {
 	lease   time.Duration
 	log     *slog.Logger
 	newID   func() string
-	now     func() time.Time
+	clock   clock.Clock
 
 	mu sync.Mutex // serialises dependent enqueueing across worker goroutines
 }
@@ -62,14 +67,19 @@ func New(opts Options) *Scheduler {
 	if opts.NewID == nil {
 		opts.NewID = defaultID
 	}
-	if opts.Now == nil {
-		opts.Now = time.Now
-	}
 	if opts.Metrics == nil {
 		opts.Metrics = metrics.New()
 	}
 	if opts.Executor == nil {
 		opts.Executor = NoopExecutor{}
+	}
+	clk := opts.Clock
+	if clk == nil {
+		if opts.Now != nil {
+			clk = clock.FromFunc(opts.Now)
+		} else {
+			clk = clock.Real{}
+		}
 	}
 	return &Scheduler{
 		store:   opts.Store,
@@ -81,7 +91,7 @@ func New(opts Options) *Scheduler {
 		lease:   opts.Lease,
 		log:     opts.Logger,
 		newID:   opts.NewID,
-		now:     opts.Now,
+		clock:   clk,
 	}
 }
 
@@ -100,7 +110,7 @@ func (s *Scheduler) Run(ctx context.Context) error {
 			s.log.Info("scheduler stopping")
 			return nil
 		case <-ticker.C:
-			s.step(ctx, s.now())
+			s.step(ctx, s.clock.Now())
 		}
 	}
 }
@@ -142,7 +152,7 @@ func (s *Scheduler) drain(ctx context.Context, now time.Time) {
 				metrics: s.metrics,
 				log:     s.log,
 				newID:   s.newID,
-				now:     s.now,
+				now:     s.clock.Now,
 			}
 			result, err := w.process(ctx, run)
 			if err != nil {
@@ -151,7 +161,7 @@ func (s *Scheduler) drain(ctx context.Context, now time.Time) {
 			}
 			if result.State == job.StateSucceeded {
 				s.mu.Lock()
-				err := s.disp.enqueueDependents(ctx, result, s.now())
+				err := s.disp.enqueueDependents(ctx, result, s.clock.Now())
 				s.mu.Unlock()
 				if err != nil {
 					s.log.Error("enqueue dependents failed", "run", run.ID, "err", err)
@@ -169,7 +179,7 @@ func (s *Scheduler) Trigger(ctx context.Context, jobID string) (job.Run, error) 
 	if err != nil {
 		return job.Run{}, err
 	}
-	now := s.now()
+	now := s.clock.Now()
 	run := job.Run{
 		ID:           s.newID(),
 		JobID:        j.ID,
