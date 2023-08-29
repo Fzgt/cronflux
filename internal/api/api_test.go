@@ -128,3 +128,16 @@ func TestDashboardServesIndex(t *testing.T) {
 		t.Errorf("dashboard did not serve index.html")
 	}
 }
+
+func TestMissingResourcesReturn404(t *testing.T) {
+	s, _ := newTestServer(t)
+	if rec := do(s, http.MethodGet, "/api/jobs/ghost", nil); rec.Code != http.StatusNotFound {
+		t.Errorf("GET missing job = %d, want 404", rec.Code)
+	}
+	if rec := do(s, http.MethodGet, "/api/runs/ghost", nil); rec.Code != http.StatusNotFound {
+		t.Errorf("GET missing run = %d, want 404", rec.Code)
+	}
+	if rec := do(s, http.MethodPost, "/api/jobs/ghost/trigger", nil); rec.Code != http.StatusNotFound {
+		t.Errorf("trigger missing job = %d, want 404", rec.Code)
+	}
+}
