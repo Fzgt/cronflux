@@ -44,7 +44,7 @@ func parseDescriptor(spec string, loc *time.Location) (Schedule, error) {
 	if expanded, ok := descriptors[spec]; ok {
 		return parseFields(strings.Fields(expanded), loc)
 	}
-	return nil, fmt.Errorf("cron: unrecognised descriptor %q", spec)
+	return nil, fmt.Errorf("cron: unknown descriptor %q (want @yearly, @monthly, @weekly, @daily, @hourly or @every)", spec)
 }
 
 // parseFields builds a SpecSchedule from an already-split field list.
