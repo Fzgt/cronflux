@@ -44,3 +44,22 @@ func TestParseFieldInvalid(t *testing.T) {
 		t.Error("expected error for non-numeric field")
 	}
 }
+
+func TestParseFieldOutOfRange(t *testing.T) {
+	cases := []struct {
+		field string
+		b     bounds
+	}{
+		{"60", minutesBound},
+		{"24", hoursBound},
+		{"0", domBound},   // day-of-month starts at 1
+		{"13", monthBound},
+		{"1-70", minutesBound},
+		{"5-1", hoursBound}, // inverted range
+	}
+	for _, tc := range cases {
+		if _, err := parseField(tc.field, tc.b); err == nil {
+			t.Errorf("parseField(%q) should have failed", tc.field)
+		}
+	}
+}

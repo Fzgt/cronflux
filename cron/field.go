@@ -72,6 +72,13 @@ func parseTerm(term string, b bounds) (uint64, error) {
 		}
 	}
 
+	if lo < b.min || hi > b.max {
+		return 0, fmt.Errorf("cron: value out of range [%d,%d] in %q", b.min, b.max, term)
+	}
+	if lo > hi {
+		return 0, fmt.Errorf("cron: inverted range in %q", term)
+	}
+
 	var mask uint64
 	for i := lo; i <= hi; i += step {
 		mask |= 1 << i
