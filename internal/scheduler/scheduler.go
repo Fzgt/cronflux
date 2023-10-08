@@ -128,7 +128,7 @@ func (s *Scheduler) step(ctx context.Context, now time.Time) {
 
 // drain claims every ready run and processes it across the worker pool.
 func (s *Scheduler) drain(ctx context.Context, now time.Time) {
-	limit := minInt(s.workers*4, 256)
+	limit := min(s.workers*4, 256)
 	claimed, err := s.store.ClaimDue(ctx, now, s.newID(), s.lease, limit)
 	if err != nil {
 		s.log.Error("claim failed", "err", err)
