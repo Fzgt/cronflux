@@ -37,6 +37,14 @@ func (w *worker) process(ctx context.Context, r job.Run) (job.Run, error) {
 
 	start := w.now()
 	execErr := w.exec.Execute(runCtx, j, r)
+
+	// If the parent context is done the scheduler is shutting down. Leave the
+	// run leased so another worker redelivers it rather than recording a
+	// spurious failure during graceful shutdown.
+	if ctx.Err() != nil {
+		return r, nil
+	}
+
 	finish := w.now()
 	dur := finish.Sub(start)
 
