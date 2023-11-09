@@ -1,0 +1,27 @@
+{
+  "jobs": [
+    {
+      "id": "extract",
+      "name": "Extract",
+      "spec": "*/5 * * * *",
+      "command": ["echo", "extract"],
+      "max_retries": 2,
+      "backoff": { "base": "2s", "max": "1m", "factor": 2, "jitter": 0.2 },
+      "enabled": true
+    },
+    {
+      "id": "transform",
+      "name": "Transform",
+      "command": ["echo", "transform"],
+      "depends_on": ["extract"],
+      "enabled": true
+    },
+    {
+      "id": "load",
+      "name": "Load",
+      "command": ["echo", "load"],
+      "depends_on": ["transform"],
+      "enabled": true
+    }
+  ]
+}
