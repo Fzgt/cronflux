@@ -1,5 +1,10 @@
 # cronflux
 
+[![CI](https://github.com/Fzgt/cronflux/actions/workflows/ci.yml/badge.svg)](https://github.com/Fzgt/cronflux/actions/workflows/ci.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/Fzgt/cronflux.svg)](https://pkg.go.dev/github.com/Fzgt/cronflux)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Fzgt/cronflux)](https://goreportcard.com/report/github.com/Fzgt/cronflux)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 A small distributed job & cron scheduler written in Go.
 
 cronflux runs cron-style and DAG-dependent jobs with at-least-once delivery,
