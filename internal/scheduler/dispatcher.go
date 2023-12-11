@@ -9,7 +9,7 @@ import (
 	"github.com/Fzgt/cronflux/internal/store"
 )
 
-// dispatcher materialises pending runs. For cron-scheduled jobs it enqueues a
+// dispatcher materializes pending runs. For cron-scheduled jobs it enqueues a
 // run each time a fire time elapses; for DAG jobs it enqueues dependents once
 // their upstreams have succeeded within the same batch.
 //
@@ -86,7 +86,7 @@ func (d *dispatcher) schedule(j job.Job) (cron.Schedule, error) {
 
 // enqueueRoot creates the pending run that starts a new batch for a cron fire.
 // It is a no-op if a run already exists for the same job and slot, which keeps
-// materialisation idempotent across scheduler restarts that re-seed the
+// materialization idempotent across scheduler restarts that re-seed the
 // next-fire cache.
 func (d *dispatcher) enqueueRoot(ctx context.Context, j job.Job, fireAt time.Time) error {
 	existing, err := d.store.ListRuns(ctx, store.RunFilter{JobID: j.ID})

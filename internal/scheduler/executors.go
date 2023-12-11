@@ -1,4 +1,4 @@
-// Package scheduler drives cronflux: it materialises runs from cron schedules,
+// Package scheduler drives cronflux: it materializes runs from cron schedules,
 // hands them to a pool of workers with at-least-once delivery, retries failures
 // with exponential backoff and walks DAG dependencies between jobs.
 package scheduler
@@ -28,7 +28,7 @@ func (f ExecutorFunc) Execute(ctx context.Context, j job.Job, r job.Run) error {
 }
 
 // NoopExecutor succeeds immediately without doing any work. It is useful for
-// testing scheduling behaviour in isolation.
+// testing scheduling behavior in isolation.
 type NoopExecutor struct{}
 
 // Execute always succeeds.
@@ -38,7 +38,7 @@ func (NoopExecutor) Execute(context.Context, job.Job, job.Run) error { return ni
 // environment. An empty command is treated as a successful no-op.
 type ShellExecutor struct{}
 
-// Execute runs the job's command, honouring cancellation via ctx.
+// Execute runs the job's command, honoring cancellation via ctx.
 func (ShellExecutor) Execute(ctx context.Context, j job.Job, _ job.Run) error {
 	if len(j.Command) == 0 {
 		return nil

@@ -52,7 +52,7 @@ func TestParseFieldOutOfRange(t *testing.T) {
 	}{
 		{"60", minutesBound},
 		{"24", hoursBound},
-		{"0", domBound},   // day-of-month starts at 1
+		{"0", domBound}, // day-of-month starts at 1
 		{"13", monthBound},
 		{"1-70", minutesBound},
 		{"5-1", hoursBound}, // inverted range

@@ -31,7 +31,7 @@ type Exponential struct {
 	// Factor is the multiplier applied per attempt. Values <= 1 fall back
 	// to the default of 2.
 	Factor float64
-	// Jitter is the fraction of the computed delay that is randomised, in
+	// Jitter is the fraction of the computed delay that is randomized, in
 	// the range [0, 1]. Zero means fully deterministic.
 	Jitter float64
 }
@@ -60,7 +60,7 @@ func (e Exponential) Delay(attempt int) time.Duration {
 		if j > 1 {
 			j = 1
 		}
-		// Randomise within [d*(1-j), d] so jitter only ever shortens the
+		// Randomize within [d*(1-j), d] so jitter only ever shortens the
 		// delay and can never exceed the cap computed above.
 		d = d*(1-j) + rand.Float64()*d*j
 	}
