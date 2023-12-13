@@ -88,7 +88,7 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	return s.http.Shutdown(ctx)
 }
 
-// ListenAndServe runs the server until ctx is cancelled, then drains it with
+// ListenAndServe runs the server until ctx is canceled, then drains it with
 // the given grace period. It returns nil on a clean shutdown.
 func (s *Server) ListenAndServe(ctx context.Context, grace time.Duration) error {
 	errCh := make(chan error, 1)

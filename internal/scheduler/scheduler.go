@@ -32,7 +32,7 @@ type Options struct {
 	Now func() time.Time
 }
 
-// Scheduler materialises runs, dispatches them to workers and advances DAG
+// Scheduler materializes runs, dispatches them to workers and advances DAG
 // dependencies. It is safe to Trigger concurrently with Run.
 type Scheduler struct {
 	store   store.Store
@@ -47,7 +47,7 @@ type Scheduler struct {
 	newID   func() string
 	clock   clock.Clock
 
-	mu sync.Mutex // serialises dependent enqueueing across worker goroutines
+	mu sync.Mutex // serializes dependent enqueueing across worker goroutines
 }
 
 // New builds a Scheduler, filling in defaults for any unset option.
@@ -98,7 +98,7 @@ func New(opts Options) *Scheduler {
 // Metrics returns the scheduler's metrics so the HTTP layer can expose them.
 func (s *Scheduler) Metrics() *metrics.Metrics { return s.metrics }
 
-// Run drives the scheduler until ctx is cancelled, at which point it returns
+// Run drives the scheduler until ctx is canceled, at which point it returns
 // nil after the in-flight tick completes.
 func (s *Scheduler) Run(ctx context.Context) error {
 	ticker := time.NewTicker(s.tick)

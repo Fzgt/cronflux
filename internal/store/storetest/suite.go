@@ -1,11 +1,12 @@
 // Package storetest provides a reusable conformance suite that any
-// store.Store implementation can run to prove it honours the interface
+// store.Store implementation can run to prove it honors the interface
 // contract. Both the in-memory and PostgreSQL backends share it so their
-// behaviour cannot drift apart.
+// behavior cannot drift apart.
 package storetest
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -51,7 +52,7 @@ func testJobCRUD(t *testing.T, s store.Store) {
 	if err := s.DeleteJob(ctx, "build"); err != nil {
 		t.Fatalf("DeleteJob: %v", err)
 	}
-	if _, err := s.GetJob(ctx, "build"); err != store.ErrNotFound {
+	if _, err := s.GetJob(ctx, "build"); !errors.Is(err, store.ErrNotFound) {
 		t.Errorf("GetJob after delete = %v, want ErrNotFound", err)
 	}
 }
@@ -75,7 +76,7 @@ func testRunLifecycle(t *testing.T, s store.Store) {
 	if got.State != job.StateSucceeded {
 		t.Errorf("run state = %q, want succeeded", got.State)
 	}
-	if _, err := s.GetRun(ctx, "missing"); err != store.ErrNotFound {
+	if _, err := s.GetRun(ctx, "missing"); !errors.Is(err, store.ErrNotFound) {
 		t.Errorf("GetRun(missing) = %v, want ErrNotFound", err)
 	}
 }
